@@ -11,10 +11,17 @@ import UIKit
 class TodoListViewController: UITableViewController {
     
     var itemArray = ["Find Mike", "Buy Eggs", "Impeach Trump"]
+    
+    // similar to Android's SharedPreferences - stores key/value pairs
+    // in a plist file
+    let defaults = UserDefaults.standard
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
+        
+        if let items = defaults.array(forKey: "TodoListArray") as? [String] {
+            itemArray = items
+        }
     }
     
     //MARK: - TableView datasource methods
@@ -67,6 +74,8 @@ class TodoListViewController: UITableViewController {
             }
             else {
                 self.itemArray.append(textFieldText.text!)
+                // add data to UserDefaults
+                self.defaults.set(self.itemArray, forKey: "TodoListArray")
                 self.tableView.reloadData()
             }
         }
