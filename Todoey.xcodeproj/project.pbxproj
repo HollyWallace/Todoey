@@ -12,6 +12,7 @@
 		84630A4C233E7E67007743EF /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 84630A4A233E7E67007743EF /* Main.storyboard */; };
 		84630A4E233E7E6A007743EF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 84630A4D233E7E6A007743EF /* Assets.xcassets */; };
 		84630A51233E7E6A007743EF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 84630A4F233E7E6A007743EF /* LaunchScreen.storyboard */; };
+		84A381A0233EC195005A8563 /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84A3819F233EC195005A8563 /* Item.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -22,6 +23,7 @@
 		84630A4D233E7E6A007743EF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		84630A50233E7E6A007743EF /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		84630A52233E7E6A007743EF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		84A3819F233EC195005A8563 /* Item.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Item.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -39,6 +41,7 @@
 			isa = PBXGroup;
 			children = (
 				84630A45233E7E67007743EF /* Todoey */,
+				84630A52233E7E6A007743EF /* Info.plist */,
 				84630A44233E7E67007743EF /* Products */,
 			);
 			sourceTree = "<group>";
@@ -55,13 +58,45 @@
 			isa = PBXGroup;
 			children = (
 				84630A46233E7E67007743EF /* AppDelegate.swift */,
-				84630A48233E7E67007743EF /* TodoListViewController.swift */,
-				84630A4A233E7E67007743EF /* Main.storyboard */,
-				84630A4D233E7E6A007743EF /* Assets.xcassets */,
-				84630A4F233E7E6A007743EF /* LaunchScreen.storyboard */,
-				84630A52233E7E6A007743EF /* Info.plist */,
+				84A381A2233EC21C005A8563 /* Controllers */,
+				84A381A3233EC237005A8563 /* Views */,
+				84A381A1233EC203005A8563 /* Data Model */,
+				84A381A4233EC24A005A8563 /* Supporting Files */,
 			);
 			path = Todoey;
+			sourceTree = "<group>";
+		};
+		84A381A1233EC203005A8563 /* Data Model */ = {
+			isa = PBXGroup;
+			children = (
+				84A3819F233EC195005A8563 /* Item.swift */,
+			);
+			path = "Data Model";
+			sourceTree = "<group>";
+		};
+		84A381A2233EC21C005A8563 /* Controllers */ = {
+			isa = PBXGroup;
+			children = (
+				84630A48233E7E67007743EF /* TodoListViewController.swift */,
+			);
+			path = Controllers;
+			sourceTree = "<group>";
+		};
+		84A381A3233EC237005A8563 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				84630A4F233E7E6A007743EF /* LaunchScreen.storyboard */,
+				84630A4A233E7E67007743EF /* Main.storyboard */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		84A381A4233EC24A005A8563 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				84630A4D233E7E6A007743EF /* Assets.xcassets */,
+			);
+			path = "Supporting Files";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -136,6 +171,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				84630A49233E7E67007743EF /* TodoListViewController.swift in Sources */,
+				84A381A0233EC195005A8563 /* Item.swift in Sources */,
 				84630A47233E7E67007743EF /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -284,7 +320,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 4ML5M7GQ2V;
-				INFOPLIST_FILE = Todoey/Info.plist;
+				INFOPLIST_FILE = "$(SRCROOT)/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -302,7 +338,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 4ML5M7GQ2V;
-				INFOPLIST_FILE = Todoey/Info.plist;
+				INFOPLIST_FILE = "$(SRCROOT)/Info.plist";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
