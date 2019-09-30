@@ -12,33 +12,15 @@ class TodoListViewController: UITableViewController {
     
     var itemArray = [Item]()
     
-    // similar to Android's SharedPreferences - stores key/value pairs
-    // in a plist file
-    let defaults = UserDefaults.standard
+    // For persisting data on the iOS device
+    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+
 
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // create a few items for testing
-        let newItem = Item()
-        newItem.title = "Find Mike"
-        newItem.done = false
-        itemArray.append(newItem)
-        
-        let newItem2 = Item()
-        newItem2.title = "Buy Eggs"
-        newItem2.done = false
-        itemArray.append(newItem2)
-        
-        let newItem3 = Item()
-        newItem3.title = "Impeach Trump"
-        newItem3.done = false
-        itemArray.append(newItem3)
-        
-        
-        if let items = defaults.array(forKey: "TodoListArray") as? [Item] {
-            itemArray = items
-        }
+        loadItems()
+
     }
     
     //MARK: - TableView datasource methods
@@ -51,7 +33,7 @@ class TodoListViewController: UITableViewController {
         
         cell.textLabel?.text = item.title
         
-        // use accessory checkmark to indicate selection state
+        // Use accessory checkmark to indicate selection state
         
         // The Ternary operator in Swift
         // value = condition ? valueIfTrue : valueIfFalse
@@ -74,13 +56,14 @@ class TodoListViewController: UITableViewController {
         // toggle the Item object's done state
         itemArray[indexPath.row].done = !itemArray[indexPath.row].done
         
-        tableView.reloadData()
+        saveItems()
 
     }
     
     //MARK: - add new items
     
     // This method is what will happen when the add new item button is pressed
+    // In our case, it shows a popup with a title, a text field and a button
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
         
         var textFieldText = UITextField()
@@ -100,9 +83,8 @@ class TodoListViewController: UITableViewController {
                 newItem.title = textFieldText.text!
                 
                 self.itemArray.append(newItem)
-                // add data to UserDefaults
-                self.defaults.set(self.itemArray, forKey: "TodoListArray")
-                self.tableView.reloadData()
+                
+                self.saveItems()
             }
         }
         
@@ -121,6 +103,38 @@ class TodoListViewController: UITableViewController {
         
     } // end of addButtonPressed method
     
+    //MARK: - Model manipulation methods
+    
+    func saveItems() {
+        
+        let encoder = PropertyListEncoder()
+        
+        do {
+            let data = try encoder.encode(itemArray)
+            try data.write(to: dataFilePath!)
+        }
+        catch {
+            print("Error encoding Item array, \(error)")
+        }
+        
+        tableView.reloadData()
+        
+    } // end of saveItems method
+    
+    func loadItems() {
+        
+        if let data = try? Data(contentsOf: dataFilePath!) {
+            
+            let decoder = PropertyListDecoder()
+            do {
+                itemArray = try decoder.decode([Item].self, from: data)
+            }
+            catch {
+                print("Error decoding Item array, \(error)")
+            }
+        }
+        
+    } // end of loadItems method
 
 } // end of TodoListViewController class
 
