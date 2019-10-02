@@ -7,11 +7,13 @@
 //
 
 import UIKit
-import CoreData
+import RealmSwift
 
 class TodoListViewController: UITableViewController {
     
-    var itemArray = [Item]()
+    let realm = try! Realm()
+    
+    var todoItems: Results<Item>?
     
     // Whatever you put inside didSet gets run as soon as selectedCategory
     // is given a value
@@ -21,15 +23,9 @@ class TodoListViewController: UITableViewController {
         }
     }
     
-    // We need a context for use with CoreData, so here is how to get
-    // the AppDelegate as a (singleton) object and then get the context
-    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-
-
     override func viewDidLoad() {
         super.viewDidLoad()
-        // To see where the data is stored
-        //print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
+
     }
     
     //MARK: - TableView datasource methods
@@ -38,21 +34,26 @@ class TodoListViewController: UITableViewController {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "TodoItemCell", for: indexPath)
         
-        let item = itemArray[indexPath.row]
-        
-        cell.textLabel?.text = item.title
-        
-        // Use accessory checkmark to indicate selection state
-        
-        // The Ternary operator in Swift
-        // value = condition ? valueIfTrue : valueIfFalse
-        cell.accessoryType = item.done ? .checkmark : .none
+        // if item is not null
+        if let item = todoItems?[indexPath.row] {
+            
+            cell.textLabel?.text = item.title
+            
+            // Use accessory checkmark to indicate selection state
+            
+            // The Ternary operator in Swift ==>
+            // value = condition ? valueIfTrue : valueIfFalse
+            cell.accessoryType = item.done ? .checkmark : .none
+        }
+        else {
+            cell.textLabel?.text = "Add an item."
+        }
         
         return cell
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return itemArray.count
+        return todoItems?.count ?? 1
     }
 
     //MARK: - TableView delegate methods
@@ -62,16 +63,30 @@ class TodoListViewController: UITableViewController {
         // the selected row is highlighted briefly but then reverts to deselected state
         tableView.deselectRow(at: indexPath, animated: true)
         
-        // Delete the item from the list when you click on it
- //       context.delete(itemArray[indexPath.row])  // MUST do this first
- //       itemArray.remove(at: indexPath.row)
+        if let item = todoItems?[indexPath.row] {
+            do {
+                try realm.write {
+                    item.done = !item.done
+                }
+            }
+            catch {
+                print("Error saving done status, \(error)")
+            }
+        }
         
-        // OR
-        
-        // toggle the Item object's done state
-        itemArray[indexPath.row].done = !itemArray[indexPath.row].done
-        
-        saveItems()
+        // OR, you can delete the row this way...
+//        if let item = todoItems?[indexPath.row] {
+//            do {
+//                try realm.write {
+//                    realm.delete(item)
+//                }
+//            }
+//            catch {
+//                print("Error deleting row, \(error)")
+//            }
+//        }
+
+        tableView.reloadData()
 
     }
     
@@ -94,14 +109,25 @@ class TodoListViewController: UITableViewController {
                 // don't store a blank
             }
             else {
-                let newItem = Item(context: self.context)
-                newItem.title = textFieldText.text!
-                newItem.done = false
-                newItem.parentCategory = self.selectedCategory
                 
-                self.itemArray.append(newItem)
+                if let currentCategory = self.selectedCategory {
+                    
+                    do {
+                        try self.realm.write {
+                            let newItem = Item()
+                            newItem.title = textFieldText.text!
+                            newItem.dateCreated = Date()
+                            currentCategory.items.append(newItem)
+                        }
+                    }
+                    catch {
+                        print("Error saving new item to Realm, \(error)")
+                    }
+                    
+                }
                 
-                self.saveItems()
+                self.tableView.reloadData()
+                
             }
         }
         
@@ -120,49 +146,14 @@ class TodoListViewController: UITableViewController {
         
     } // end of addButtonPressed method
     
+    
+    
     //MARK: - Model manipulation methods
-    
-    func saveItems() {
-        
-        do {
-            try context.save()
-        }
-        catch {
-            print("Error saving context, \(error)")
-        }
-        
-        self.tableView.reloadData()
-        
-    } // end of saveItems method
-    
-    // In here, with is the external parameter, meaning you can use it
-    // when calling the method, and request is the internal parameter
-    // that will be used inside the method.  You might want an external
-    // parameter so that your method calls read more like English
-    //
-    // We set up the method to have a default request for when you just
-    // want to retrieve everything.  That's the equal sign and the thing
-    // after it.  So, the request equals Item.fetchRequest() unless you
-    // specify something else when you call the method.
-    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest(), predicate: NSPredicate? = nil) {
-        
-        let categoryPredicate = NSPredicate(format: "parentCategory.name MATCHES %@", selectedCategory!.name!)
-        
-        if let additionalPredicate = predicate {
-            request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [categoryPredicate, additionalPredicate])
-        }
-        else {
-            request.predicate = categoryPredicate
-        }
-    
 
-        do {
-            itemArray = try context.fetch(request)
-        }
-        catch {
-            print("Error fetching data from context: \(error)")
-        }
+    func loadItems() {
         
+        todoItems = selectedCategory?.items.sorted(byKeyPath: "title", ascending: true)
+
         tableView.reloadData()
 
     } // end of loadItems method
@@ -174,27 +165,15 @@ class TodoListViewController: UITableViewController {
 //MARK: - Search bar methods
 
 extension TodoListViewController: UISearchBarDelegate {
-    
+
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+//        todoItems = todoItems?.filter("title CONTAINS[cd] %@", searchBar.text!).sorted(byKeyPath: "title", ascending: true)
+        todoItems = todoItems?.filter("title CONTAINS[cd] %@", searchBar.text!).sorted(byKeyPath: "dateCreated", ascending: true)
         
-        // To query the database you set up a request and use an NSPredicate
-        let request : NSFetchRequest<Item> = Item.fetchRequest()
-        // String comparisons are by default case and diacritic sensitive.  Using c
-        // for case and d for diacritic allows you to ignore case and diacritical marks
-        // respectively
-        // Add the query to the request
-        let predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
-        
-        // Sort the results
-        // Add the sort descriptor to the request as well; notice that it is
-        // sortDescriptors PLURAL and that it expects an array of sort descriptors
-        request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
-        
-        // Here, we use the external parameter to the loadItems method because
-        // it is more readable
-        loadItems(with: request, predicate: predicate)
+        tableView.reloadData()
     }
-    
+
+   
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         // check to see if the search bar is empty, like when the little cross
         // button has been tapped
@@ -205,9 +184,9 @@ extension TodoListViewController: UISearchBarDelegate {
             DispatchQueue.main.async {
                 searchBar.resignFirstResponder()
             }
-            
+
         }
-        
+
     }
-    
+
 } // end of search bar extension
