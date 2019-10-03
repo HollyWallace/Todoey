@@ -9,7 +9,7 @@
 import UIKit
 import RealmSwift
 
-class TodoListViewController: UITableViewController {
+class TodoListViewController: SwipeTableViewController {
     
     let realm = try! Realm()
     
@@ -23,16 +23,19 @@ class TodoListViewController: UITableViewController {
         }
     }
     
+
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
     }
     
     //MARK: - TableView datasource methods
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "TodoItemCell", for: indexPath)
+        // this method overrides the one in SwipeTableViewController, so we need
+        // access to its cell reference
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
         
         // if item is not null
         if let item = todoItems?[indexPath.row] {
@@ -46,11 +49,11 @@ class TodoListViewController: UITableViewController {
             cell.accessoryType = item.done ? .checkmark : .none
         }
         else {
-            cell.textLabel?.text = "Add an item."
+            cell.textLabel?.text = "Please add an item."
         }
         
         return cell
-    }
+    } // end of tableView.cellForRowAt method
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return todoItems?.count ?? 1
@@ -73,22 +76,10 @@ class TodoListViewController: UITableViewController {
                 print("Error saving done status, \(error)")
             }
         }
-        
-        // OR, you can delete the row this way...
-//        if let item = todoItems?[indexPath.row] {
-//            do {
-//                try realm.write {
-//                    realm.delete(item)
-//                }
-//            }
-//            catch {
-//                print("Error deleting row, \(error)")
-//            }
-//        }
 
         tableView.reloadData()
 
-    }
+    } // end of tableView.didSelectRowAt method
     
     //MARK: - Add new items
     
@@ -132,8 +123,8 @@ class TodoListViewController: UITableViewController {
         }
         
         alert.addTextField { (alertTextField) in
-            // the placeholder is the pale grey text in the field that disappears once the user
-            // starts typing
+            // the placeholder is the pale grey text in the field that disappears once the
+            // user starts typing
             alertTextField.placeholder = "Create new item"
             textFieldText = alertTextField
         }
@@ -157,6 +148,21 @@ class TodoListViewController: UITableViewController {
         tableView.reloadData()
 
     } // end of loadItems method
+    
+    
+    override func updateModel(at indexPath: IndexPath) {
+        if let itemForDeletion = self.todoItems?[indexPath.row] {
+            do {
+                try self.realm.write {
+                    self.realm.delete(itemForDeletion)
+                }
+            }
+            catch {
+                print("Error deleting item, \(error)")
+            }
+
+        }
+    }
 
     
     
