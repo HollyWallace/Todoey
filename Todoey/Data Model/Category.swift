@@ -11,6 +11,7 @@ import RealmSwift
 
 class Category: Object {
     @objc dynamic var name : String = ""
+    @objc dynamic var backgroundColor : String = "" // hex string
     // Define relationship between Category and List
     let items = List<Item>()
 }

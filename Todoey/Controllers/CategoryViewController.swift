@@ -8,6 +8,7 @@
 
 import UIKit
 import RealmSwift
+import ChameleonFramework
 
 class CategoryViewController: SwipeTableViewController {
     
@@ -15,11 +16,15 @@ class CategoryViewController: SwipeTableViewController {
     let realm = try! Realm()
     
     var categories: Results<Category>?
+    //var categoryBackgroundColor : String = ""
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         loadCategories()
+        
+        // remove separator lines between the table cells
+        tableView.separatorStyle = .none
 
     }
 
@@ -41,7 +46,12 @@ class CategoryViewController: SwipeTableViewController {
         let cell = super.tableView(tableView, cellForRowAt: indexPath)
 
         // Configure the cell...
-        cell.textLabel?.text = categories?[indexPath.row].name ?? "Please add a category"
+        if let category = categories?[indexPath.row] {
+            cell.textLabel?.text = category.name ?? "Please add a category"
+            
+            cell.backgroundColor = UIColor(hexString: category.backgroundColor ?? "#1D9BF6")
+        }
+        
 
         return cell
     }
@@ -139,6 +149,8 @@ class CategoryViewController: SwipeTableViewController {
             else {
                 let newCategory = Category()
                 newCategory.name = textFieldText.text!
+                // Get random background color from Chameleon
+                newCategory.backgroundColor = UIColor.randomFlat().hexValue()
 
                 self.save(category: newCategory)
             }
@@ -158,6 +170,7 @@ class CategoryViewController: SwipeTableViewController {
         present(alert, animated: true, completion: nil)
         
     } // end of addButtonPressed method
+
     
 } // end of CategoryViewController class
 
