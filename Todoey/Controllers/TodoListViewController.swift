@@ -16,6 +16,9 @@ class TodoListViewController: SwipeTableViewController {
     
     var todoItems: Results<Item>?
     
+    @IBOutlet weak var searchBar: UISearchBar!
+    
+    
     // Whatever you put inside didSet gets run as soon as selectedCategory
     // is given a value
     var selectedCategory : Category? {
@@ -28,7 +31,53 @@ class TodoListViewController: SwipeTableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         tableView.separatorStyle = .none
+        
     }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        
+        title = selectedCategory?.name
+        
+        // Set the navigation bar color to match the category color
+        guard let colorHex = selectedCategory?.backgroundColor else { fatalError() }
+            
+        updateNavBar(withHexCode: colorHex)
+            
+    } // end of viewWillAppear method
+    
+    
+    // Here we can prevent the navigation bar coloring for this screen
+    // from carrying back to the Category screen
+    override func viewWillDisappear(_ animated: Bool) {
+        
+        updateNavBar(withHexCode: "#1D9BF6")
+    }
+    
+    
+    //MARK: - Nav Bar setup methods
+    
+    func updateNavBar(withHexCode colorHexCode: String) {
+        
+        // Does the navigation bar exist?  Use this for testing.
+        guard let navBar = navigationController?.navigationBar else {fatalError("Navigation controller does not exist yet.")}
+        
+        guard let navBarColor = UIColor(hexString: colorHexCode) else { fatalError() }
+                
+        // Set the navigation bar background color
+        navBar.barTintColor = navBarColor
+        
+        // Set the navigation bar text and buttons to a contrasting color
+        navBar.tintColor = ContrastColorOf(navBarColor, returnFlat: true)
+        
+        // Set the title text
+        //navBar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor : ContrastColorOf(navBarColor, returnFlat: true)]
+        navBar.titleTextAttributes = [NSAttributedString.Key.foregroundColor : ContrastColorOf(navBarColor, returnFlat: true)]
+        
+        // Set the search bar background color too
+        searchBar.barTintColor = navBarColor
+        
+    } // end of updateNavBar method
+    
     
     //MARK: - TableView datasource methods
     
@@ -46,7 +95,7 @@ class TodoListViewController: SwipeTableViewController {
             // Use Chameleon to make each subsequent row slightly darker
             // Then let Chameleon figure out whether the text needs to be
             // black or white to be readable
-            if let colour = FlatWhite().darken(byPercentage:
+            if let colour = UIColor(hexString: selectedCategory!.backgroundColor)?.darken(byPercentage:
                 CGFloat(indexPath.row) / CGFloat(todoItems!.count ) ) {
                     cell.backgroundColor = colour
                 
